@@ -1,0 +1,180 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage{mathtools}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{
+  Foundational Proof-Carrying Code \\
+  \large Presentation notes  
+}
+\author{
+  Enríquez Ballester, Adrián 
+  \and
+  Isasa Martín, Carlos Ignacio
+  \and 
+  Mata Aguilar, Luis
+  \and 
+  Bak, Mieczyslaw
+}
+
+\begin{document}
+\maketitle
+
+In 1996, a Gorge Necula's paper \cite{necula:pcc} 
+introduces the idea of Proof-Carrying code:
+
+\begin{enumerate}
+  \item \textbf{Code producer}: generates an executable 
+    together with a proof (certificate) that the program 
+    adheres to some safety policy.
+  \item \textbf{Code consumer}: receives some untrusted 
+    executable with its proof and can validate it before 
+    running.
+\end{enumerate}
+
+The idea is not about cryptography, but about type systems 
+for machine code (i.e. a deductive system defined over 
+machine instructions which is proved to guarantee or 
+preserve some properties).
+
+Based on that work, Andrew W. Appel, known for being a 
+major contributor of the StandardML compiler, starts its 
+research in Foundational Proof-Carrying Code, which he 
+defines as \cite{appel:fpcc}:
+
+\begin{center}
+\textit{
+  A framework for mechanical verification of safety 
+  properties of machine language...
+}
+\end{center}
+
+until here it is Proof-Carrying Code
+
+\begin{center}
+\textit{
+  ...with the smallest possible runtime and verifier.
+}
+\end{center}
+
+and this last part is the Foundational one. 
+
+The drawback that he sees for Proof-Carrying Code as 
+initially described is that it is ad-hoc for each specific 
+case, and built-in type rules and lemmas must be a trusted 
+part because they are human-verified. Foundational 
+Proof-Carrying Code relies on a primitive logic (e.g. high 
+order with some arithmetic axioms) which is powerful 
+enough to encode the required type system and lemmas. It 
+means that they are instead proved in this foundational 
+logic. With this, the aim is to make the trusted part as 
+small as possible.
+
+At that moment, they chose Twelf for defining the logic and
+the required encodings, this is just an example to 
+illustrate how it looks like:
+
+\begin{verbatim}
+                      tp   : type.
+                      tm   : tp -> type.
+                      num  : tp.
+                      pair : tp -> tp -> tp.
+                      
+\end{verbatim}
+
+One of the parts that must be modeled within this logic is 
+the target machine architecture. The behavior (i.e. 
+semantic) and encoding (i.e. syntax) of machine 
+instructions must be defined, and they believe that it is
+possible for every usual architecture in a similar way 
+(i.e. as a step relation $(r,m) \mapsto (r',m')$ where $r$ 
+and $r'$ are states of the register bank and $m$ and $m'$ 
+of the memory). For example, they encoded the SPARK 
+architecture by means of 1035 Twelf LOC for the syntactic 
+part, generated with a 151 LOC of a higher level language 
+due to redundancies, and 600 Twelf LOC for the semantic 
+one. This is an example of an \textit{add} instruction 
+encoding:
+
+\begin{align*}
+  \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
+    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+      &\land (\forall x \neq i.\;r'(x) = r(x)) \\
+      &\land m' = m \\
+\end{align*}
+
+Safety requirements can be specified in the syntax and 
+semantics themselves, by making the step relation 
+deliberately partial or by making some syntax forbidden 
+just by not defining it. This is a dumb example of the 
+previous instruction to be not allowed for a certain 
+register:
+
+\begin{align*}
+  \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
+    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+      &\land (\forall x \neq i.\;r'(x) = r(x)) \\
+      &\land m' = m \\
+      &\land i \neq 42 \\
+\end{align*}
+
+Now, for proving the adherence to the safety requirements,
+an appropriate type system must be defined for the machine
+instructions and, as they follow a so called semantic 
+approach, it requires the following to be encoded in the 
+foundational logic as proofs, not as built-ins:
+
+\begin{itemize}
+  \item Type judgements are assigned a truth value.
+  \item If the premise judgements are true, then the 
+    conclusion judgement must be true.
+  \item If a type judgement is true, then it corresponds
+    to a safe state.
+\end{itemize}
+
+One of the most challenging parts has been to find an 
+appropriate model for encoding type systems. Its first 
+approach \cite{appel:fpcc:semantic} was to model types as 
+sets of values, and model values in a direct way like a 
+pair consisting of the memory and a memory address, but 
+they encounter some limitations:
+
+\begin{itemize}
+  \item They were unable to model mutable fields.
+  \item They were unable to model certain kinds of 
+    recursive datatype definitions.
+\end{itemize}
+
+Their second approach \cite{appel:fpcc:indexed} was to 
+model types as sets of pairs $\langle k, v \rangle$ where 
+$k$ is an approximation index and $v$ a value. The 
+judgement $\langle k, v \rangle \in \tau$ means informally 
+that $v$ can be considered to have type $\tau$ for a 
+program running for less than $k$ steps. This model solved 
+their problem with recursion, but the one with mutable 
+fields remained. A PhD thesis of a student of A.W. Appel 
+offered later a model which solved also that problem. 
+
+\subsection*{A sad ending for this presentation}
+
+Ten years later, A.W. Appel says that now it is practical 
+to prove safety and correctness with type systems for 
+source code instead of machine code and they are 
+trustworthy if compiled with a formally verified compiler
+\cite{appel:fpcc:compilers}, so he is now involved in 
+projects of this kind (e.g. CertiCoq 
+\cite{website:certicoq}, CompCert \cite{website:compcert}, 
+CertiKOS \cite{website:certikos}).
+
+However, although the results of this research seems to 
+have not so much practical interest nowadays, we wanted to
+show how they encoded type systems in a foundational way, 
+which is not only applicable to type systems for machine 
+code as they show for example with a usual typed lambda 
+calculus.
+\bibliography{refs}{}
+\bibliographystyle{plain}
+
+\end{document}
