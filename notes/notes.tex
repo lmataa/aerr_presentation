@@ -4,9 +4,10 @@
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{xcolor}
 
 \title{
-  Foundational Proof-Carrying Code \\
+  A foundational model for types \\
   \large Presentation notes  
 }
 \author{
@@ -21,6 +22,8 @@
 
 \begin{document}
 \maketitle
+
+\section*{Foundational Proof-Carrying Code}
 
 In 1996, a Gorge Necula's paper \cite{necula:pcc} 
 introduces the idea of Proof-Carrying code:
@@ -157,7 +160,7 @@ their problem with recursion, but the one with mutable
 fields remained. A PhD thesis of a student of A.W. Appel 
 offered later a model which solved also that problem. 
 
-\subsection*{A sad ending for this presentation}
+\section*{Interlude}
 
 Ten years later, A.W. Appel says that now it is practical 
 to prove safety and correctness with type systems for 
@@ -168,12 +171,20 @@ projects of this kind (e.g. CertiCoq
 \cite{website:certicoq}, CompCert \cite{website:compcert}, 
 CertiKOS \cite{website:certikos}).
 
-However, although the results of this research seems to 
-have not so much practical interest nowadays, we wanted to
+However, although the results of this research seem to 
+have not so much practical interest nowadays, we want to
 show how they encoded type systems in a foundational way, 
 which is not only applicable to type systems for machine 
 code as they show for example with a usual typed lambda 
 calculus.
+
+\section*{A foundational model for types}
+
+\textcolor{red}{This will be the technical part of the 
+presentation. We can explain briefly their first approach
+and its limitations, and show in a little more detail their 
+second approach (i.e. an indexed model for types).}
+
 \bibliography{refs}{}
 \bibliographystyle{plain}
 
