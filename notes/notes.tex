@@ -5,6 +5,7 @@
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{xcolor}
+\usepackage{bussproofs}
 
 \title{
   A foundational model for types \\
@@ -179,23 +180,159 @@ code as they show for example with a usual typed lambda
 calculus.
 
 \section*{A foundational model for types}
+%Summarizing what we have seen, our aim is to give 
+%automatic proofs for the decidable safety properties 
+%of our programs. Before delving in how to do this 
+%we should first formalize the notion of safety: 
+%a given state is safe if, for any state reachable 
+%in the Kleene closure of the step transition, 
+%there is a successor state.
+%\begin{align*}
+%    &\mathsf{safe-state}(r.m)=\\
+%    &\forall r'. m'. \quad (r.m\mapsto^{\ast}r'.m') 
+%    \implies 
+%    \exists r''.m'' \quad (r'.m'\mapsto %r''.m'')
+%\end{align*}
 
-Why a semantic model and not just to be able to define a set
-of rules? Because in this way the rules are required to have valid 
-proofs and do not require a trusted party.
+%We say that a program is safe if, independently of 
+%where we load it in memory, we end up with a safe sate. 
+%Furthermore we need some safety conditions in order 
+%to know if we have successor states or not. Some 
+%examples may be:
+%\begin{itemize}
+%    \item $\forall v. (v\geq 50)\implies readable(v)$
+%    
+%\end{itemize}
 
-They have been experimenting with usual type systems for functional 
-and imperative languages, and even for type systems designed for 
-machine instructions. Its first attempt was to model types directly 
-as sets of values, defined according to each use case, but they 
-would not be able to model datatypes with contravariant recursion
-and mutable fields.
+The first key insight of FPCC -and of PCC in reality- 
+is realizing that you can write type-inference rules
+for machine language and states, for example:
 
-Its second approach, which we are going to show briefly, was also 
-lacking some features, but they focused on improving the recursion 
-support.
+\begin{prooftree}
+\AxiomC{$m\vdash x:\tau_1\times\tau_2$}
+\UnaryInfC{$m\vdash m(x):\tau_1\wedge m(x+1):\tau_2$}
+\end{prooftree}
+
+which means that if $x$ has type $\tau_1\times\tau_2$ 
+-meaning a pointer to a pair of those types-, then 
+the contents of direction $x$ will be of type $\tau_1$ 
+and the contents of direction $x+1$ will be of type 
+$\tau_2$. We can even add safety policies into the mix:
+
+\begin{prooftree}
+\AxiomC{$m\vdash x:\tau_1\times\tau_2$}
+\UnaryInfC{$\mathsf{readable}(x)
+  \wedge\mathsf{readable}(x+1)
+  \wedge m\vdash m(x):\tau_1\wedge m(x+1):\tau_2$}
+\end{prooftree}
+
+The second key insight of FPCC -which really makes it 
+foundational-,  is realizing that instead of looking
+at this from a syntactical standpoint we can do it 
+from a semantical standpoint. Viewing things from a 
+syntactic standpoint is significantly harder as they
+only allow subject-reduction over a set of axiomatic 
+syntactic rules. Using semantics, however, allows us
+to have these expressions as lemmas provable from 
+their syntactic meaning instead of axioms. Let us 
+define $m\vdash x:\tau$ as an application of predicate
+$\tau$ on memory $m$ and integer (or address) $x$.
+So $m\vdash x:\tau \equiv \tau (m)(x)$. To note the 
+change from syntactic semantic we shall note the 
+types as $\models x:\tau$ We can now give the 
+semantic meaning to the rules written before of:
+\begin{align*}
+  \mathsf{record}(\tau_1,\tau_2)mx=&\\
+  &\mathsf{readable}(x)\wedge\mathsf{readable}(x+1)\\
+  &\wedge \models m(x):\tau_1, m(x+1):\tau_2
+\end{align*}
+
+Which not only allows us to prove the expressions
+that we've already seen but also:
+
+\begin{prooftree}
+\AxiomC{$\mathsf{readable}(x)$}
+\AxiomC{$\mathsf{readable}(x+1)$}
+\AxiomC{$\models m(x):\tau_1$}
+\AxiomC{$\models m(x+1):\tau_2$}
+\QuaternaryInfC{$\models x:\tau_1\times\tau_2$}
+\end{prooftree}
+
+However, all of this poses a problem, what do we 
+do if the memory changes? Let us suppose an initial 
+state with 
+$\models r_1: \mathsf{int}\times\mathsf{int}, r_3: 
+\mathsf{int}$ and a set of instructions:
+
+\begin{align*}
+  &\mathsf{m}(r_2)\leftarrow r_3\\
+  &\mathsf{m}(r_2+1)\leftarrow r_3
+\end{align*}
+
+How can we prove that 
+$\models r_1: \mathsf{int}\times\mathsf{int}$ when 
+the fact was stated in the initial state of the 
+memory but it has changed? We can certainly prove 
+theorems of the form:
+
+\begin{prooftree}
+\AxiomC{$\models_m v: \mathsf{int}\times\mathsf{int}$}
+\AxiomC{$\mathsf{upd}(m,x,y,m')$}
+\AxiomC{$x\neq v$}
+\AxiomC{$x\neq v+1$}
+\QuaternaryInfC{
+  $\models_{m'} v: \mathsf{int}\times\mathsf{int}$}
+\end{prooftree}
+
+But how can we prove $x\neq v$ and $x\neq v+1$ in a
+simple way? The authors of \cite{appel:fpcc:semantic} 
+came up with using the heap allocation pointer $a$ as 
+a way to check if types are maintained. Giving the 
+record example again, we shall define it as:
+
+\begin{align*}
+  \mathsf{record}(\tau_1,\tau_2)(a,m)x=&\\
+  &x\in a\wedge x+1\in a\\
+  &\wedge\mathsf{readable}(x)
+    \wedge\mathsf{readable}(x+1)\\
+  &\wedge \models m(x):\tau_1, m(x+1):\tau_2
+\end{align*}
+
+Now using as an example the register $r_6$ we can 
+define what being in $a$ is:
+
+\begin{align*}
+    \mathsf{stda}(r,m)(v)=v<r_6
+\end{align*}
+
+As the heap expands, new values are stored without 
+deleting the old ones. In order to check if the 
+registers are kept within this type we must define 
+a function to check if they are valid (i.e. 
+consistent):
+
+\begin{align*}
+  \mathsf{valid}(\tau)=&\\
+  &\forall a,a',m,v. (a \subset a') \implies 
+    \tau(a,m)v \implies \tau(a',m)v\\
+  \wedge&\forall a,m,m',v (\forall x m(x)=m'(x))
+    \implies \tau(a,m)v \implies \tau(a,m')v
+\end{align*}
+
+The first part of the definition means that the type 
+is invariant under increases of the allocation set
+while the second part is that it is invariant under 
+the storing of new unallocated variables. With these
+new concepts, going back to our examples we can
+assert that the register $r_1$ maintains the typing 
+$\mathsf{int}\times\mathsf{int}$ as long as that 
+type is valid 
 
 \subsection*{Indexed model for types}
+The type system for FPCC that we have discussed has 
+some issues, mainly in dealing with recursion. 
+In order to solve them, we need a new definition for
+type that lets us come with more advanced proofs.
 
 A type is modeled as a set of pairs of the form 
 $\langle k, v \rangle$ where $k$ is a nonnegative integer called 
@@ -254,7 +391,7 @@ For the semantics, they consider a pretty standard small step and
 safeness is to not reach a stuck term.
 
 \textcolor{red}{
-  SMALL STEP RULES: PAPER OF INDEXED MODEL FIGURE 1
+  SHOW THE SMALL STEP RULES: PAPER OF INDEXED MODEL FIGURE 1
 }
 
 The defined type sets which they define for this use case are,
@@ -286,15 +423,19 @@ together with $\bot$ and $\top$:
 }
 
 \textcolor{red}{
-  THE RULES OF THE TYPE SYSTEM: PAPER OF INDEXED MODEL FIGURE 2
+  SHOW THE RULES OF THE TYPE SYSTEM: PAPER OF INDEXED MODEL FIGURE 2
 }
 
 \textcolor{red}{
-  SHOW THAT THE AXIOMS FOLLOW FROM THE DEFINITIONS
+  BUT DISCUSS ONLY SOME EASY PROOFS:
 }
 
 \textcolor{red}{
-  SHOW HOW SOME OF THE RULES AND TYPES ALSO CAN BE PROVED 
+  THE AXIOMS FOLLOW FROM THE DEFINITIONS
+}
+
+\textcolor{red}{
+  HOW SOME OF THE RULES AND TYPES ALSO CAN BE PROVED 
   (SELECT FROM ABSTRACTION, APPLICATION, PAIR, PROJECTION...)
 }
 
@@ -334,6 +475,7 @@ way.
   \item Recursive datatype definitions.
   \item polymorphism, universal and existential quantification.
 \end{itemize}
+
 
 \bibliography{refs}{}
 \bibliographystyle{plain}
