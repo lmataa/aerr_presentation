@@ -180,10 +180,160 @@ calculus.
 
 \section*{A foundational model for types}
 
-\textcolor{red}{This will be the technical part of the 
-presentation. We can explain briefly their first approach
-and its limitations, and show in a little more detail their 
-second approach (i.e. an indexed model for types).}
+Why a semantic model and not just to be able to define a set
+of rules? Because in this way the rules are required to have valid 
+proofs and do not require a trusted party.
+
+They have been experimenting with usual type systems for functional 
+and imperative languages, and even for type systems designed for 
+machine instructions. Its first attempt was to model types directly 
+as sets of values, defined according to each use case, but they 
+would not be able to model datatypes with contravariant recursion
+and mutable fields.
+
+Its second approach, which we are going to show briefly, was also 
+lacking some features, but they focused on improving the recursion 
+support.
+
+\subsection*{Indexed model for types}
+
+A type is modeled as a set of pairs of the form 
+$\langle k, v \rangle$ where $k$ is a nonnegative integer called 
+index, $v$ is a value and it is closed under decreasing index 
+(i.e.whenever $\langle k, v \rangle$ belongs to a type $\tau$, 
+we also have that $\langle j, v \rangle$ belongs to 
+$\tau$ for all $j \geq k$).
+
+We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
+implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
+is the step relation given by the corresponding small step 
+semantics.
+
+In each case, the type sets must be defined, but some conventional 
+ones which do not depend on a specific use case are for example 
+
+\begin{align*}
+  \bot &\equiv \{\} \\ 
+  \top &\equiv \{ \langle k, v \rangle\;|\; k \geq 0 \}
+\end{align*}
+
+Type environment and states are modeled respectively as mappings 
+from variables to types and variables to values. The consistency 
+of a state $\sigma$ and environment $\Gamma$ is written 
+$\sigma :_k \Gamma$ and defined as $\forall x \in dom(\Gamma)$
+we have $\sigma(x) :_k \Gamma(x)$.
+
+The entailment relation $\Gamma \models_k e$ is the semantic 
+counterpart of a type judgement and means 
+$\sigma(e):_k \alpha$ for all state $\sigma$ consistent with 
+$\Gamma$, where $\sigma(e)$ is the result of replacing all the 
+free variables of $e$ with their values in $\sigma$. Also, 
+$\Gamma \models e : \alpha$ means 
+$\Gamma \models e :_k \alpha$ for all $k \geq 0$.
+
+\subsection*{Lambda calculus example}
+
+As an example of type system modeled in this way, they consider 
+a lambda calculus with pairs and the constant $0$:
+
+$$
+  e \Coloneqq x 
+      \;|\; 0 
+      \;|\; \langle e_1, e_2 \rangle 
+      \;|\; \pi_1(e) 
+      \;|\; \pi_2(e)
+      \;|\; \lambda x. e 
+      \;|\; e_1\;e_2
+$$
+
+Values are the constant $0$, a closed abstraction 
+$\lambda x.e$ (i.e. no free variables) and a pair of values 
+$\langle v_1, v_2 \rangle$.
+
+For the semantics, they consider a pretty standard small step and 
+safeness is to not reach a stuck term.
+
+\textcolor{red}{
+  SMALL STEP RULES: PAPER OF INDEXED MODEL FIGURE 1
+}
+
+The defined type sets which they define for this use case are,
+together with $\bot$ and $\top$:
+
+\begin{align*}
+  \mathsf{int} &\equiv \{ \langle k, 0 \rangle \;|\; 
+    \forall k.\;k \geq 0 \} \\
+  \tau_1 \times \tau_2 &\equiv 
+    \{ \langle k, \langle v_1, v_2 \rangle \rangle \;|\; 
+          \forall j.\;j < k \land
+          \langle j, v_1\rangle \in \tau_1  \land 
+          \langle j, v_2 \rangle \in \tau_2
+    \} \\
+  \alpha \rightarrow \tau &\equiv 
+    \{ \langle k, \lambda x. e \rangle \;|\; 
+        \forall j.\;j < k \land
+        \langle j, v \rangle \in \alpha \implies
+          e[v/x] :_j \tau
+    \} \\ 
+  \mu F &\equiv 
+    \{ \langle k, v \rangle \;|\; \langle k, v \rangle \in 
+      F^{k + 1}(\bot)
+    \}
+\end{align*}
+
+\textcolor{red}{
+  DISCUSS WHY IN THIS CASE $\models e : \alpha$ IS SAFE.
+}
+
+\textcolor{red}{
+  THE RULES OF THE TYPE SYSTEM: PAPER OF INDEXED MODEL FIGURE 2
+}
+
+\textcolor{red}{
+  SHOW THAT THE AXIOMS FOLLOW FROM THE DEFINITIONS
+}
+
+\textcolor{red}{
+  SHOW HOW SOME OF THE RULES AND TYPES ALSO CAN BE PROVED 
+  (SELECT FROM ABSTRACTION, APPLICATION, PAIR, PROJECTION...)
+}
+
+\textcolor{red}{
+  DISCUSS BRIEFLY ABOUT RECURSION. IT IS THE MOST DIFFICULT PART 
+  BUT ALSO IMPORTANT BECAUSE IT MOTIVATES THE INDICES IN THIS MODEL
+}
+
+\section*{Conclusion}
+
+Foundational Proof Carrying Code seems to be out of interest 
+nowadays, but it motivated a research about modeling type systems 
+in a foundational way.
+
+In that research, to model types directly as sets of values was
+not enough for some features such as contravariant recursive
+definitions and mutable fields.
+
+A more sophisticated model, which we are presenting here, allowed 
+them to model better recursion, and further research seems to have 
+solved even the problem they had about mutable fields.
+
+These results may help in studying type systems from the point of 
+view of foundational mathematics and also where the introduction 
+of rules must be correct within a logic in a machine-checkable 
+way.
+
+\textcolor{red}{
+  THESE ARE SOME OF THE FEATURES THAT THEY SUCCESFULLY 
+  ENCODED WITH THIS MODEL, I PUT THEM HERE AS A DRAFT:
+}
+
+\begin{itemize}
+  \item Usual features of a functional language.
+  \item Usual features of an imperative and OO language.
+  \item Specific type systems for machine instructions.
+  \item Recursive datatype definitions.
+  \item polymorphism, universal and existential quantification.
+\end{itemize}
 
 \bibliography{refs}{}
 \bibliographystyle{plain}
