@@ -17,8 +17,6 @@
   Isasa Martín, Carlos Ignacio
   \and 
   Mata Aguilar, Luis
-  \and 
-  Bak, Mieczyslaw
 }
 
 \begin{document}
@@ -180,33 +178,15 @@ code as they show for example with a usual typed lambda
 calculus.
 
 \section*{A foundational model for types}
-%Summarizing what we have seen, our aim is to give 
-%automatic proofs for the decidable safety properties 
-%of our programs. Before delving in how to do this 
-%we should first formalize the notion of safety: 
-%a given state is safe if, for any state reachable 
-%in the Kleene closure of the step transition, 
-%there is a successor state.
-%\begin{align*}
-%    &\mathsf{safe-state}(r.m)=\\
-%    &\forall r'. m'. \quad (r.m\mapsto^{\ast}r'.m') 
-%    \implies 
-%    \exists r''.m'' \quad (r'.m'\mapsto %r''.m'')
-%\end{align*}
 
-%We say that a program is safe if, independently of 
-%where we load it in memory, we end up with a safe sate. 
-%Furthermore we need some safety conditions in order 
-%to know if we have successor states or not. Some 
-%examples may be:
-%\begin{itemize}
-%    \item $\forall v. (v\geq 50)\implies readable(v)$
-%    
-%\end{itemize}
+We are going to show incrementally an example for machine 
+instructions with the reasoning of their initial attempt 
+to model types within a foundational logic.
 
 The first key insight of FPCC -and of PCC in reality- 
 is realizing that you can write type-inference rules
-for machine language and states, for example:
+for machine language and states, for example a pair 
+projection:
 
 \begin{prooftree}
 \AxiomC{$m\vdash x:\tau_1\times\tau_2$}
@@ -238,19 +218,19 @@ their syntactic meaning instead of axioms. Let us
 define $m\vdash x:\tau$ as an application of predicate
 $\tau$ on memory $m$ and integer (or address) $x$.
 So $m\vdash x:\tau \equiv \tau (m)(x)$. To note the 
-change from syntactic semantic we shall note the 
-types as $\models_m x: \tau$ We can now give the 
-semantic meaning to the rules written before of:
+change from syntactic to semantic we shall note the 
+type judgements as $\models_m x: \tau$. We can now give 
+the semantic meaning to the rules written before of:
 
 \begin{align*}
-  \mathsf{record}(\tau_1,\tau_2)(m)(x) \coloneqq
+  \mathsf{pair}(\tau_1,\tau_2)(m)(x) \coloneqq
   &\;\mathsf{readable}(x)\\ 
   \wedge&\;\mathsf{readable}(x+1)\\
   \wedge&\tau_1(m)(m(x))\\ 
   \wedge&\tau_2(m)(m(x+1))
 \end{align*}
 
-Which not only allows us to prove the expressions
+which not only allows us to prove the expressions
 that we've already seen but also:
 
 \begin{prooftree}
@@ -291,10 +271,10 @@ But how can we prove $x\neq v$ and $x\neq v+1$ in a
 simple way? The authors of \cite{appel:fpcc:semantic} 
 came up with using the heap allocation pointer $a$ as 
 a way to check if types are maintained. Giving the 
-record example again, we shall define it as:
+pair example again, we shall define it as:
 
 \begin{align*}
-  \mathsf{record}(\tau_1,\tau_2)(a,m)(x)&=\\
+  \mathsf{pair}(\tau_1,\tau_2)(a,m)(x)&=\\
   x&\in a\wedge x+1\in a\\
   \wedge&\;\mathsf{readable}(x) \\
   \wedge&\;\mathsf{readable}(x+1)\\
@@ -332,12 +312,11 @@ assert that the register $r_1$ maintains the typing
 $\mathsf{int}\times\mathsf{int}$ as long as that 
 type is valid. 
 
-We have shown a specific constructive example of their 
-approach to model types acording to their needs. With 
-this reasoning, they were able to model the usual 
-features of a type system like type constructors, 
-function types and a restricted version of recursive 
-datatypes.
+With this kind of reasoning, apart from defining 
+specific typing rules for machine instructions as in the 
+example, they were also able to model the usual features 
+of a type system like type constructors, function types 
+and a restricted version of recursive datatypes.
 
 \subsection*{Indexed model for types}
 
@@ -440,8 +419,8 @@ closed under decreasing index property).
 With that, the remaining rules can also be proved. For example,
 the idea of the proof for the application rule consists on 
 the fact that, for a given $k$, the left subterm either does not 
-reach a normal form or it reduces to a lambda expression. By 
-cheching then the result of beta reducing it and the corresponding 
+reach a normal form yet or it reduces to a lambda expression. By 
+checking then the result of beta reducing it and the corresponding 
 type set definitions, the rule follows.
 
 (Show a slide with the typing rules and comment that they are 
@@ -470,7 +449,7 @@ view of foundational mathematics and also where the introduction
 of rules must be correct within a logic in a machine-checkable 
 way.
 
-To list some of the features successfully modeled within 
+This is a list of some of the features successfully modeled within 
 their research:
 
 \begin{itemize}
