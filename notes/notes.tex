@@ -104,7 +104,7 @@ encoding:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r.m.r'.m'.\;&r'(i) = r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
 \end{align*}
@@ -118,7 +118,7 @@ register:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r.m.r'.m'.\;&r'(i) = r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
       &\land i \neq 42 \\
@@ -132,10 +132,10 @@ foundational logic as proofs, not as built-ins:
 
 \begin{itemize}
   \item Type judgements are assigned a truth value.
-  \item If the premise judgements are true, then the 
-    conclusion judgement must be true.
   \item If a type judgement is true, then it corresponds
     to a safe state.
+  \item If the premise judgements are true, then the 
+    conclusion judgement must be true.
 \end{itemize}
 
 One of the most challenging parts has been to find an 
@@ -239,12 +239,15 @@ define $m\vdash x:\tau$ as an application of predicate
 $\tau$ on memory $m$ and integer (or address) $x$.
 So $m\vdash x:\tau \equiv \tau (m)(x)$. To note the 
 change from syntactic semantic we shall note the 
-types as $\models x:\tau$ We can now give the 
+types as $\models_m x: \tau$ We can now give the 
 semantic meaning to the rules written before of:
+
 \begin{align*}
-  \mathsf{record}(\tau_1,\tau_2)mx=&\\
-  &\mathsf{readable}(x)\wedge\mathsf{readable}(x+1)\\
-  &\wedge \models m(x):\tau_1, m(x+1):\tau_2
+  \mathsf{record}(\tau_1,\tau_2)(m)(x) \coloneqq
+  &\;\mathsf{readable}(x)\\ 
+  \wedge&\;\mathsf{readable}(x+1)\\
+  \wedge&\tau_1(m)(m(x))\\ 
+  \wedge&\tau_2(m)(m(x+1))
 \end{align*}
 
 Which not only allows us to prove the expressions
@@ -253,15 +256,15 @@ that we've already seen but also:
 \begin{prooftree}
 \AxiomC{$\mathsf{readable}(x)$}
 \AxiomC{$\mathsf{readable}(x+1)$}
-\AxiomC{$\models m(x):\tau_1$}
-\AxiomC{$\models m(x+1):\tau_2$}
-\QuaternaryInfC{$\models x:\tau_1\times\tau_2$}
+  \AxiomC{$\models_m m(x): \tau_1$}
+  \AxiomC{$\models_m m(x+1) : \tau_2$}
+\QuaternaryInfC{$\models_m x: \tau_1\times\tau_2$}
 \end{prooftree}
 
 However, all of this poses a problem, what do we 
 do if the memory changes? Let us suppose an initial 
 state with 
-$\models r_1: \mathsf{int}\times\mathsf{int}, r_3: 
+$\models_m r_1: \mathsf{int}\times\mathsf{int}, r_3: 
 \mathsf{int}$ and a set of instructions:
 
 \begin{align*}
@@ -270,7 +273,7 @@ $\models r_1: \mathsf{int}\times\mathsf{int}, r_3:
 \end{align*}
 
 How can we prove that 
-$\models r_1: \mathsf{int}\times\mathsf{int}$ when 
+$\models r_1:_{m'} \mathsf{int}\times\mathsf{int}$ when 
 the fact was stated in the initial state of the 
 memory but it has changed? We can certainly prove 
 theorems of the form:
@@ -291,14 +294,15 @@ a way to check if types are maintained. Giving the
 record example again, we shall define it as:
 
 \begin{align*}
-  \mathsf{record}(\tau_1,\tau_2)(a,m)x=&\\
-  &x\in a\wedge x+1\in a\\
-  &\wedge\mathsf{readable}(x)
-    \wedge\mathsf{readable}(x+1)\\
-  &\wedge \models m(x):\tau_1, m(x+1):\tau_2
+  \mathsf{record}(\tau_1,\tau_2)(a,m)(x)&=\\
+  x&\in a\wedge x+1\in a\\
+  \wedge&\;\mathsf{readable}(x) \\
+  \wedge&\;\mathsf{readable}(x+1)\\
+  \wedge&\;\tau_1(a, m)(x)\\
+  \wedge&\;\tau_2(a, m)(x+1)
 \end{align*}
 
-Now using as an example the register $r_6$ we can 
+Now, using as an example the register $r_6$, we can 
 define what being in $a$ is:
 
 \begin{align*}
@@ -314,9 +318,9 @@ consistent):
 \begin{align*}
   \mathsf{valid}(\tau)=&\\
   &\forall a,a',m,v. (a \subset a') \implies 
-    \tau(a,m)v \implies \tau(a',m)v\\
-  \wedge&\forall a,m,m',v (\forall x m(x)=m'(x))
-    \implies \tau(a,m)v \implies \tau(a,m')v
+    \tau(a,m)(v) \implies \tau(a',m)(v)\\
+  \wedge&\forall\;a,m,m',v (\forall x\;m(x)=m'(x))
+    \implies \tau(a,m)(v) \implies \tau(a,m')(v)
 \end{align*}
 
 The first part of the definition means that the type 
@@ -326,9 +330,17 @@ the storing of new unallocated variables. With these
 new concepts, going back to our examples we can
 assert that the register $r_1$ maintains the typing 
 $\mathsf{int}\times\mathsf{int}$ as long as that 
-type is valid 
+type is valid. 
+
+We have shown a specific constructive example of their 
+approach to model types acording to their needs. With 
+this reasoning, they were able to model the usual 
+features of a type system like type constructors, 
+function types and a restricted version of recursive 
+datatypes.
 
 \subsection*{Indexed model for types}
+
 The type system for FPCC that we have discussed has 
 some issues, mainly in dealing with recursion. 
 In order to solve them, we need a new definition for
@@ -339,10 +351,11 @@ $\langle k, v \rangle$ where $k$ is a nonnegative integer called
 index, $v$ is a value and it is closed under decreasing index 
 (i.e.whenever $\langle k, v \rangle$ belongs to a type $\tau$, 
 we also have that $\langle j, v \rangle$ belongs to 
-$\tau$ for all $j \geq k$).
+$\tau$ for all $j \leq k$).
 
-We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
-implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
+We write $e :_k \tau$ if $e \rightarrow^j e'$ for some $j < k$ 
+and $e'$ in normal form implies 
+$\langle k - j, e'\rangle \in \tau$, where $\rightarrow$ 
 is the step relation given by the corresponding small step 
 semantics.
 
@@ -390,10 +403,6 @@ $\langle v_1, v_2 \rangle$.
 For the semantics, they consider a pretty standard small step and 
 safeness is to not reach a stuck term.
 
-\textcolor{red}{
-  SHOW THE SMALL STEP RULES: PAPER OF INDEXED MODEL FIGURE 1
-}
-
 The defined type sets which they define for this use case are,
 together with $\bot$ and $\top$:
 
@@ -418,31 +427,29 @@ together with $\bot$ and $\top$:
     \}
 \end{align*}
 
-\textcolor{red}{
-  DISCUSS WHY IN THIS CASE $\models e : \alpha$ IS SAFE.
-}
+The relation $\models e : \alpha$ models safety trivially from 
+its definition, and the rules which correspond to the axioms 
+of variables and the constant $0$ can also be trivially proved 
+from the definitions of consistency and the type set 
+$\mathsf{int}$.
 
-\textcolor{red}{
-  SHOW THE RULES OF THE TYPE SYSTEM: PAPER OF INDEXED MODEL FIGURE 2
-}
+The same happens in order to prove that the type sets product 
+and abstraction are also valid types (i.e. they satisfy the 
+closed under decreasing index property).
 
-\textcolor{red}{
-  BUT DISCUSS ONLY SOME EASY PROOFS:
-}
+With that, the remaining rules can also be proved. For example,
+the idea of the proof for the application rule consists on 
+the fact that, for a given $k$, the left subterm either does not 
+reach a normal form or it reduces to a lambda expression. By 
+cheching then the result of beta reducing it and the corresponding 
+type set definitions, the rule follows.
 
-\textcolor{red}{
-  THE AXIOMS FOLLOW FROM THE DEFINITIONS
-}
+(Show a slide with the typing rules and comment that they are 
+written with their entailment relation syntax but in fact 
+they are defined within the logic they use).
 
-\textcolor{red}{
-  HOW SOME OF THE RULES AND TYPES ALSO CAN BE PROVED 
-  (SELECT FROM ABSTRACTION, APPLICATION, PAIR, PROJECTION...)
-}
-
-\textcolor{red}{
-  DISCUSS BRIEFLY ABOUT RECURSION. IT IS THE MOST DIFFICULT PART 
-  BUT ALSO IMPORTANT BECAUSE IT MOTIVATES THE INDICES IN THIS MODEL
-}
+This new approach allows them to model more advanced features 
+such as quantified types and type equalities.
 
 \section*{Conclusion}
 
@@ -454,26 +461,27 @@ In that research, to model types directly as sets of values was
 not enough for some features such as contravariant recursive
 definitions and mutable fields.
 
-A more sophisticated model, which we are presenting here, allowed 
-them to model better recursion, and further research seems to have 
-solved even the problem they had about mutable fields.
+A more sophisticated model allowed them to better model recursion, 
+and further research seems to have solved even the problem they 
+had about mutable fields.
 
 These results may help in studying type systems from the point of 
 view of foundational mathematics and also where the introduction 
 of rules must be correct within a logic in a machine-checkable 
 way.
 
-\textcolor{red}{
-  THESE ARE SOME OF THE FEATURES THAT THEY SUCCESFULLY 
-  ENCODED WITH THIS MODEL, I PUT THEM HERE AS A DRAFT:
-}
+To list some of the features successfully modeled within 
+their research:
 
 \begin{itemize}
   \item Usual features of a functional language.
   \item Usual features of an imperative and OO language.
   \item Specific type systems for machine instructions.
   \item Recursive datatype definitions.
-  \item polymorphism, universal and existential quantification.
+  \item Function types (i.e. first-class functions, continuations 
+    and closures).
+  \item Universal and existential quantification.
+  \item Type equality (i.e. $\tau_1 \sim \tau_2$).
 \end{itemize}
 
 
