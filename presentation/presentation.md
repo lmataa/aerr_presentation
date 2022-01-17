@@ -197,22 +197,20 @@ But they had trouble in encoding some highly desirable features:
 
 # Snd. attempt
 
-A type is modeled as a set of pairs of the form 
-$\langle k, v \rangle$ where $k$ is a nonnegative integer called 
-index, $v$ is a value and it is closed under decreasing index 
-(i.e.whenever $\langle k, v \rangle$ belongs to a type $\tau$, 
-we also have that $\langle j, v \rangle$ belongs to 
-$\tau$ for all $j \geq k$).
+A type is modeled as a set of pairs of index and value of the form 
+$\langle k, v \rangle$.
 
-We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
-implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
-is the step relation given by the corresponding small step 
-semantics.
+It has to be closed under decreasing index:
+
+$$
+\langle k, v \rangle \in \tau \implies, 
+\langle j, v \rangle \in \tau \;\forall j \leq k 
+$$
 
 # Snd. attempt
 
-In each case, the type sets must be defined, but some conventional 
-ones which do not depend on a specific use case are for example:
+Type sets defined for each use case, but here are some conventional 
+examples:
 
 \begin{align*}
   \bot &\equiv \{\} \\ 
@@ -220,25 +218,81 @@ ones which do not depend on a specific use case are for example:
 \end{align*}
 
 Type environment and states are modeled respectively as mappings 
-from variables to types and variables to values. The consistency 
-of a state $\sigma$ and environment $\Gamma$ is written 
-$\sigma :_k \Gamma$ and defined as $\forall x \in dom(\Gamma)$
-we have $\sigma(x) :_k \Gamma(x)$.
+from variables to types and variables to values. 
+$\sigma :_k \Gamma$ denotes consistency:
+
+$$
+\sigma(x) :_k \Gamma(x) \; \forall x \in dom(\Gamma)
+$$
 
 # Snd. attempt
 
-The entailment relation $\Gamma \models_k e$ is the semantic 
-counterpart of a type judgement and means 
-$\sigma(e):_k \alpha$ for all state $\sigma$ consistent with 
-$\Gamma$, where $\sigma(e)$ is the result of replacing all the 
-free variables of $e$ with their values i n $\sigma$. 
+We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
+implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
+is the step relation given by the corresponding small step 
+semantics.
 
-Also, 
-$\Gamma \models e : \alpha$ means 
-$\Gamma \models e :_k \alpha$ for all $k \geq 0$.
+With this, the entailment relation $\Gamma \models_k e$ 
+is the semantic counterpart of a type judgement and means
 
+$$
+\sigma(e):_k \alpha \; \forall \sigma s.t. \sigma :_k \Gamma
+$$
+
+Also, $\Gamma \models e : \alpha$ means that the relation is 
+satisfied for all $k \geq 0$.
 
 # Snd. attempt: Lambda calculus example
+
+$$              
+  e ::= x 
+      \;|\; 0                        
+      \;|\; \langle e_1, e_2 \rangle 
+      \;|\; \pi_1(e) 
+      \;|\; \pi_2(e)     
+      \;|\; \lambda x. e 
+      \;|\; e_1\;e_2
+$$
+
+# Snd. attempt: Lambda calculus example
+
+Values: $0$, closed abstraction terms and pairs of values.
+
+Small step semantics: standard.
+
+Safeness: to not reach a stuck term, trivially modeled from the 
+definition of $\models e:\alpha$.
+
+# Snd. attempt: Lambda calculus example
+
+Type sets:
+
+\begin{align*}
+  \mathsf{int} &\equiv \{ \langle k, 0 \rangle \;|\; 
+    \forall k.\;k \geq 0 \} \\
+  \tau_1 \times \tau_2 &\equiv 
+    \{ \langle k, \langle v_1, v_2 \rangle \rangle \;|\; 
+          \forall j.\;j < k \land
+          \langle j, v_1\rangle \in \tau_1  \land 
+          \langle j, v_2 \rangle \in \tau_2
+    \} \\
+  \alpha \rightarrow \tau &\equiv 
+    \{ \langle k, \lambda x. e \rangle \;|\; 
+        \forall j.\;j < k \land
+        \langle j, v \rangle \in \alpha \implies
+          e[v/x] :_j \tau
+    \} \\ 
+  \mu F &\equiv 
+    \{ \langle k, v \rangle \;|\; \langle k, v \rangle \in 
+      F^{k + 1}(\bot)
+    \}
+\end{align*}
+
+They are closed under decreasing index by definition.
+
+# Snd. attempt: Lambda calculus example
+
+TODO show typing rules
 
 # 
 
