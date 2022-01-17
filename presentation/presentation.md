@@ -21,7 +21,9 @@ header-includes:
 
 - \hyperlink{pcc}{Foundational Proof-Carrying Code}
 
-- \hyperlink{foundational_types}{A Foundational Model for Types}
+- \hyperlink{foundational_types_1}{A Foundational Model for Types: fst. attempt}
+
+- \hyperlink{foundational_types_2}{A Foundational Model for Types: snd. attempt}
 
 - \hyperlink{conclusions}{Conclusions}
 
@@ -72,7 +74,7 @@ and this last part is the Foundational one.
 
 # Foundational Proof-Carrying Code: Logic
 
-They chose higher+order logic with some arithmetic axioms, 
+They chose higher-order logic with some arithmetic axioms, 
 and implement the specifications using the Twelf language.
 
 # Foundational Proof-Carrying Code: Architecture
@@ -82,7 +84,7 @@ encoding:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r.m.r'.m'.r'(i) &= r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
 \end{align*}
@@ -94,7 +96,7 @@ of the previous instruction itself:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r.m.r'.m'.r'(i) &= r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
       &\land i \neq 42 \\
@@ -120,8 +122,8 @@ calculus.
 
 # 
 
-\section{A Foundational Model for Types}
-\label{foundational_types}
+\section{A Foundational Model for Types: fst. attempt}
+\label{foundational_types_1}
 
 # Fst. attempt
 
@@ -195,6 +197,11 @@ But they had trouble in encoding some highly desirable features:
 - Recursive datatype definitions where the recursion is in contravariant position.
 - Mutable fields.
 
+# 
+
+\section{A Foundational Model for Types: snd. attempt}
+\label{foundational_types_2}
+
 # Snd. attempt
 
 A type is modeled as a set of pairs of index and value of the form 
@@ -203,7 +210,7 @@ $\langle k, v \rangle$.
 It has to be closed under decreasing index:
 
 $$
-\langle k, v \rangle \in \tau \implies, 
+\langle k, v \rangle \in \tau \implies 
 \langle j, v \rangle \in \tau \;\forall j \leq k 
 $$
 
@@ -236,7 +243,7 @@ With this, the entailment relation $\Gamma \models_k e$
 is the semantic counterpart of a type judgement and means
 
 $$
-\sigma(e):_k \alpha \; \forall \sigma s.t. \sigma :_k \Gamma
+\sigma(e):_k \alpha \; \forall \sigma \;\text{s.t.}\; \sigma :_k \Gamma
 $$
 
 Also, $\Gamma \models e : \alpha$ means that the relation is 
@@ -292,7 +299,66 @@ They are closed under decreasing index by definition.
 
 # Snd. attempt: Lambda calculus example
 
-TODO show typing rules
+## Type inference lemmas:
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models x: \Gamma(x)$}
+\end{prooftree}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models 0: \mathsf{int}$}
+\end{prooftree}
+\end{minipage}
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models f: \alpha \rightarrow \beta \;\;\;\; \Gamma \models e: \alpha$}
+\UnaryInfC{$\Gamma \models f\;e : \beta$}
+\end{prooftree}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma[x := \alpha] \models e: \beta$}
+\UnaryInfC{$\Gamma \models \lambda x. e: \alpha \rightarrow \beta$}
+\end{prooftree}
+\end{minipage}
+
+\begin{prooftree}
+\AxiomC{$\Gamma \models e_1: \alpha \;\;\;\; \Gamma e_2: \beta$}
+\UnaryInfC{$\Gamma \models \langle e_1, e_2 \rangle: \alpha \times \beta$}
+\end{prooftree}
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models e: \alpha \times \beta$}
+\UnaryInfC{$\Gamma \models \pi_1(e) : \alpha$}
+\end{prooftree}
+\hfill
+\end{minipage}
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models e: \alpha \times \beta$}
+\UnaryInfC{$\Gamma \models \pi_2(e) : \beta$}
+\end{prooftree}
+\end{minipage}
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models e: \mu F$}
+\UnaryInfC{$\Gamma \models e: F(\mu F)$}
+\end{prooftree}
+\hfill
+\end{minipage}
+\begin{minipage}[t]{0.48\linewidth}
+\begin{prooftree}
+\AxiomC{$\Gamma \models e: F(\mu F)$}
+\UnaryInfC{$\Gamma e : \mu F$}
+\end{prooftree}
+\end{minipage}
 
 # 
 
@@ -301,7 +367,7 @@ TODO show typing rules
 
 # Conclusions
 
-Foundational Proof Carrying Code, although out of interest 
+Foundational Proof-Carrying Code, although out of interest 
 nowadays, motivated a research about modeling type systems 
 in a foundational way.
 
