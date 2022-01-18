@@ -274,7 +274,7 @@ implies $\langle k - j, e'\rangle \in \tau$, where $\rightarrow$
 is the step relation given by the corresponding small step 
 semantics.\pause
 
-With this, the entailment relation $\Gamma \models_k e$ 
+With this, the entailment relation $\Gamma \models_k e: \alpha$ 
 is the semantic counterpart of a type judgement and means
 
 $$
