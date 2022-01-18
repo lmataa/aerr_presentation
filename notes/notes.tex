@@ -17,6 +17,8 @@
   Isasa Martín, Carlos Ignacio
   \and 
   Mata Aguilar, Luis
+  \and 
+  Bak, Mieczyslaw
 }
 
 \begin{document}
@@ -102,7 +104,7 @@ encoding:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r.m.r'.m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
 \end{align*}
@@ -116,7 +118,7 @@ register:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r.m.r'.m'.\;&r'(i) = r(j) + r(k) \\
+    \lambda r,m,r',m'.\;&r'(i) = r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
       &\land i \neq 42 \\
@@ -296,10 +298,10 @@ a function to check if they are valid (i.e.
 consistent):
 
 \begin{align*}
-  \mathsf{valid}(\tau)=&\\
-  &\forall a,a',m,v. (a \subset a') \implies 
+  \mathsf{valid}(\tau)=
+  &\;\forall a,a',m,v.\;(a \subset a') \implies 
     \tau(a,m)(v) \implies \tau(a',m)(v)\\
-  \wedge&\forall\;a,m,m',v (\forall x\;m(x)=m'(x))
+  \wedge&\;\forall a,m,m',v.\; (\forall x\;m(x)=m'(x))
     \implies \tau(a,m)(v) \implies \tau(a,m')(v)
 \end{align*}
 

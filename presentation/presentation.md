@@ -5,8 +5,9 @@ date: \today
 institute: "Universidad Complutense de Madrid (UCM)"
 author: 
 - "Luis Mata"
-- "Adrian Enríquez"
 - "Carlos Ignacio Isasa"
+- "Adrian Enríquez"
+- "Mieczyslaw Bak"
 fontsize: 10px
 mathspec: true
 bibliography: notes.bib
@@ -34,7 +35,7 @@ header-includes:
 
 # Proof-Carrying Code
 
-1. **Code producer**: generates executable $+$ proof that of adherance to a safety policy
+1. **Code producer**: generates executable $+$ proof of adherence to a safety policy
    
 2. **Code consumer**: validates the executable and the proof before running it.
 
@@ -84,7 +85,7 @@ encoding:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r.m.r'.m'.r'(i) &= r(j) + r(k) \\
+    \lambda r,m,r',m'.r'(i) &= r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
 \end{align*}
@@ -96,7 +97,7 @@ of the previous instruction itself:
 
 \begin{align*}
   \mathsf{add}(i, j, k) = \;\;\;\;&\\ 
-    \lambda r.m.r'.m'.r'(i) &= r(j) + r(k) \\
+    \lambda r,m,r',m'.r'(i) &= r(j) + r(k) \\
       &\land (\forall x \neq i.\;r'(x) = r(x)) \\
       &\land m' = m \\
       &\land i \neq 42 \\
@@ -128,10 +129,10 @@ calculus.
 # Fst. attempt
 
 Values are defined in a straightforward way for the 
-use case, and types are sets of values.
+use case, and types are sets of values.\pause
 
 We are going to see a machine instruction example 
-where values are memory data and adresses.
+where values are memory data and addresses.
 
 # Fst. attempt: Machine instructions PCC example
 
@@ -141,6 +142,7 @@ Pair projections:
 \AxiomC{$m\vdash x:\tau_1\times\tau_2$}
 \UnaryInfC{$m\vdash m(x):\tau_1\wedge m(x+1):\tau_2$}
 \end{prooftree}
+\pause
 
 Adding safety policies into the mix:
 
@@ -150,6 +152,7 @@ Adding safety policies into the mix:
   \wedge\mathsf{readable}(x+1)
   \wedge m\vdash m(x):\tau_1\wedge m(x+1):\tau_2$}
 \end{prooftree}
+\pause
 
 But this is PCC yet.
 
@@ -159,6 +162,7 @@ Let us define $m\vdash x:\tau$ as an application of
 predicate $\tau$ on memory $m$ and integer $x$:
 
 $$m\vdash x:\tau \equiv \tau (m)(x)$$ 
+\pause
 
 We write $\models_m x:\tau$ to note the change from a 
 syntactic viewpoint to a semantic one.
@@ -184,6 +188,34 @@ stands for
   \wedge&\;\tau_2(m)(x+1)
 \end{align*}
 
+# Fst. attempt: Machine instructions FPCC example
+
+They keep adding ingredients according to their needs,
+for example, adding a heap allocation state to the relation: 
+
+\begin{align*}
+  \mathsf{pair}(\tau_1,\tau_2)(m, a)(x) =
+  &\;x \in a\\
+  \wedge&\;x + 1 \in a\\
+  \wedge&\;\mathsf{readable}(x)\\
+  \wedge&\;\mathsf{readable}(x+1)\\
+  \wedge&\;\tau_1(m)(x)\\
+  \wedge&\;\tau_2(m)(x+1)
+\end{align*}
+
+# Fst. attempt: Machine instructions FPCC example
+
+And a predicate to check if a type is consistent 
+according to heap allocation:
+
+\begin{align*}
+  \mathsf{valid}&(\tau)=
+  \;\forall a,a',m,v.\;(a \subset a') \implies     
+    \tau(a,m)(v) \implies \tau(a',m)(v)\\                 
+  \wedge&\;\forall a,m,m',v.\;(\forall x\;m(x)=m'(x))    
+    \implies \tau(a,m)(v) \implies \tau(a,m')(v)    
+\end{align*} 
+
 # Fst. attempt: Results
 
 Achievements:
@@ -192,7 +224,8 @@ Achievements:
 - Datatype declarations.
 - Function types.
 
-But they had trouble in encoding some highly desirable features:
+\pause
+But they had trouble with encoding some highly desirable features:
 
 - Recursive datatype definitions where the recursion is in contravariant position.
 - Mutable fields.
@@ -205,7 +238,7 @@ But they had trouble in encoding some highly desirable features:
 # Snd. attempt
 
 A type is modeled as a set of pairs of index and value of the form 
-$\langle k, v \rangle$.
+$\langle k, v \rangle$.\pause 
 
 It has to be closed under decreasing index:
 
@@ -223,6 +256,7 @@ examples:
   \bot &\equiv \{\} \\ 
   \top &\equiv \{ \langle k, v \rangle\;|\; k \geq 0 \}
 \end{align*}
+\pause
 
 Type environment and states are modeled respectively as mappings 
 from variables to types and variables to values. 
@@ -234,10 +268,11 @@ $$
 
 # Snd. attempt
 
-We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
-implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
+We write $e :_k \tau$ if $e \rightarrow^j e'$ for some $j < k$ 
+and $e'$ which do not admit more steps
+implies $\langle k - j, e'\rangle \in \tau$, where $\rightarrow$ 
 is the step relation given by the corresponding small step 
-semantics.
+semantics.\pause
 
 With this, the entailment relation $\Gamma \models_k e$ 
 is the semantic counterpart of a type judgement and means
@@ -263,9 +298,9 @@ $$
 
 # Snd. attempt: Lambda calculus example
 
-Values: $0$, closed abstraction terms and pairs of values.
+Values: $0$, closed abstraction terms and pairs of values.\pause
 
-Small step semantics: standard.
+Small step semantics: standard.\pause
 
 Safeness: to not reach a stuck term, trivially modeled from the 
 definition of $\models e:\alpha$.
@@ -294,6 +329,7 @@ Type sets:
       F^{k + 1}(\bot)
     \}
 \end{align*}
+\pause 
 
 They are closed under decreasing index by definition.
 
@@ -379,7 +415,7 @@ of rules must be correct within a logic in a machine-checkable way.
 
 # Conclusion
 
-After several attempts, they modeled succesfully some basic and advanced
+After several attempts, they modeled successfully some basic and advanced
 type system features:
 
 - Usual type systems of functional languages.
