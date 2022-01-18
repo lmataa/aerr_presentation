@@ -52,7 +52,7 @@ Approached via type systems for machine code, not cryptography.
 \end{center}
 
 until here it's still Proof-Carrying Code
-
+\pause
 \begin{center}
 \textit{
   ...with the smallest possible runtime and verifier.
@@ -67,9 +67,9 @@ and this last part is the Foundational one.
 
 ## How?
 
-- Choose a foundational logic (e.g. higher-order $+$ arithmetic).
-- Model the machine architecture (e.g. a step relation $(r,m) \mapsto (r',m')$ between memory and register bank states).
-- Model the security requirements (e.g. by making the step relation deliberately partial).
+- Choose a foundational logic (e.g. higher-order $+$ arithmetic). \pause
+- Model the machine architecture (e.g. a step relation $(r,m) \mapsto (r',m')$ between memory and register bank states). \pause
+- Model the security requirements (e.g. by making the step relation deliberately partial). \pause
 - Model a type system (e.g. values as memory data and types as sets of values).
 
 # Foundational Proof-Carrying Code: Logic
