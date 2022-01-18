@@ -234,8 +234,9 @@ $$
 
 # Snd. attempt
 
-We write $e :_k \tau$ if $e \rightarrow^j v$ for some $j < k$ 
-implies $\langle k - j, v\rangle \in \tau$, where $\rightarrow$ 
+We write $e :_k \tau$ if $e \rightarrow^j e'$ for some $j < k$ 
+and $e'$ which do not admit more steps
+implies $\langle k - j, e'\rangle \in \tau$, where $\rightarrow$ 
 is the step relation given by the corresponding small step 
 semantics.
 
